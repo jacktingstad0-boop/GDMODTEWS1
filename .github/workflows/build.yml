@@ -1,0 +1,30 @@
+name: Build CART3R Windows mod
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract existing mod source
+        shell: pwsh
+        run: Expand-Archive -LiteralPath CART3R-GD-Pause-Learner-v4-source.zip -DestinationPath mod-source -Force
+      - name: Build Geode mod
+        id: geode
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: given
+          target: Win64
+          path: mod-source
+          combine: false
+      - name: Upload installable mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: CART3R-Pause-Learner-Windows
+          path: ${{ steps.geode.outputs.build-output }}/*.geode
+          if-no-files-found: error
